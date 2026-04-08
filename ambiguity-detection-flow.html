@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>资产字段语义歧义检测流程</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f5f7fa; font-family: 'Microsoft YaHei', sans-serif; }
+  .page {
+    width: 960px; margin: 30px auto; background: #fff;
+    border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 40px 50px 50px;
+  }
+  h1 {
+    text-align: center; font-size: 26px; color: #1A237E;
+    margin-bottom: 32px; letter-spacing: 2px;
+  }
+
+  .flow { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+  .node {
+    border-radius: 24px; padding: 10px 28px; font-size: 14px;
+    text-align: center; position: relative; min-width: 280px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .node-start { background: #BBDEFB; border: 2px solid #1565C0; font-weight: bold; font-size: 15px; }
+  .node-process { background: #E3F2FD; border: 1.5px solid #1565C0; }
+  .node-norm { background: #E1D5E7; border: 1.5px solid #9673A6; }
+  .node-result-ok { background: #C8E6C9; border: 2.5px solid #2E7D32; color: #1B5E20; font-weight: bold; }
+  .node-summary { background: #FFF2CC; border: 1.5px solid #D6B656; }
+  .node-end { background: #BBDEFB; border: 2px solid #1565C0; font-weight: bold; font-size: 15px; }
+
+  .arrow { width: 2px; height: 22px; background: #1565C0; position: relative; }
+  .arrow::after {
+    content: ''; position: absolute; bottom: -5px; left: -4px;
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 6px solid #1565C0;
+  }
+  .arrow-short { height: 14px; }
+  .arrow-green { background: #2E7D32; }
+  .arrow-green::after { border-top-color: #2E7D32; }
+  .arrow-orange { background: #E65100; }
+  .arrow-orange::after { border-top-color: #E65100; }
+  .arrow-gray { background: #999; }
+  .arrow-gray::after { border-top-color: #999; }
+
+  .section {
+    border-radius: 14px; padding: 20px 24px 22px;
+    width: 100%; position: relative; margin: 0;
+  }
+  .section-title {
+    font-size: 14px; font-weight: bold; text-align: left;
+    margin-bottom: 14px; letter-spacing: 1px;
+  }
+
+  .section-norm { background: rgba(243,229,245,0.45); border: 2px dashed #CE93D8; }
+  .section-norm .section-title { color: #6A1B9A; }
+
+  .section-phase1 { background: rgba(232,245,233,0.45); border: 2px dashed #81C784; }
+  .section-phase1 .section-title { color: #2E7D32; }
+
+  .section-phase2 { background: rgba(255,248,225,0.45); border: 2px dashed #FFD54F; }
+  .section-phase2 .section-title { color: #E65100; }
+
+  .diamond-row {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; gap: 0;
+  }
+  .diamond {
+    width: 300px; min-height: 48px; padding: 12px 16px;
+    background: #C8E6C9; border: 1.5px solid #43A047;
+    transform: rotate(0deg); border-radius: 10px;
+    font-size: 12.5px; text-align: center; display: flex;
+    align-items: center; justify-content: center;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    min-height: 70px; font-weight: 500;
+  }
+  .diamond-wrap {
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .diamond-box {
+    width: 310px; height: 72px; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .diamond-shape {
+    width: 100%; height: 100%; background: #C8E6C9; border: 1.5px solid #43A047;
+    clip-path: polygon(50% 2%, 98% 50%, 50% 98%, 2% 50%);
+    display: flex; align-items: center; justify-content: center;
+    position: absolute; top: 0; left: 0;
+  }
+  .diamond-text {
+    position: relative; z-index: 2; font-size: 12.5px;
+    text-align: center; padding: 0 40px; font-weight: 500;
+  }
+
+  .norm-diamond-box {
+    width: 180px; height: 68px; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .norm-diamond-shape {
+    width: 100%; height: 100%; background: #F3E5F5; border: 1.5px solid #9673A6;
+    clip-path: polygon(50% 2%, 98% 50%, 50% 98%, 2% 50%);
+    position: absolute; top: 0; left: 0;
+  }
+
+  .branch-row {
+    display: flex; align-items: flex-start; width: 100%; gap: 20px;
+    justify-content: center;
+  }
+  .branch-label {
+    font-size: 11px; font-weight: bold; padding: 2px 8px;
+    border-radius: 4px; display: inline-block; margin-bottom: 2px;
+  }
+  .label-yes { color: #2E7D32; }
+  .label-no { color: #E65100; }
+
+  .d-row {
+    display: flex; align-items: center; width: 100%;
+    justify-content: center; gap: 0; position: relative;
+  }
+  .d-center { display: flex; flex-direction: column; align-items: center; }
+  .d-right-arrow {
+    display: flex; align-items: center; gap: 4px;
+    position: absolute; right: 30px;
+  }
+  .h-line { width: 40px; height: 2px; background: #2E7D32; position: relative; }
+  .h-line::after {
+    content: ''; position: absolute; right: -5px; top: -4px;
+    border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+    border-left: 6px solid #2E7D32;
+  }
+
+  .success-bar {
+    width: 120px; background: #C8E6C9; border: 2.5px solid #2E7D32;
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; text-align: center; font-size: 13px;
+    font-weight: bold; color: #1B5E20; padding: 14px 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); line-height: 1.6;
+    position: absolute; right: -160px; top: 0;
+    height: 100%;
+  }
+
+  .phase1-body {
+    display: flex; position: relative; width: 100%;
+  }
+  .phase1-steps {
+    display: flex; flex-direction: column; align-items: center;
+    flex: 1; gap: 0;
+  }
+
+  .tag-mark {
+    display: inline-block; background: #F8CECC; border: 1.5px solid #B85450;
+    border-radius: 8px; padding: 6px 18px; font-size: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+
+  .a-cards {
+    display: flex; gap: 16px; justify-content: center; width: 100%;
+  }
+  .a-card {
+    flex: 1; border-radius: 12px; padding: 14px 12px;
+    text-align: center; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .a1 { background: #FFCDD2; border: 1.5px solid #E53935; }
+  .a2 { background: #FFE0B2; border: 1.5px solid #FB8C00; }
+  .a3 { background: #BBDEFB; border: 1.5px solid #1E88E5; }
+  .a-card .a-title { font-weight: bold; font-size: 15px; margin-bottom: 4px; }
+
+  .legend {
+    display: flex; gap: 24px; justify-content: center;
+    margin-top: 28px; font-size: 12px; color: #666; flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-color {
+    width: 14px; height: 14px; border-radius: 3px; border: 1px solid #ccc;
+  }
+
+  .fork-label {
+    font-size: 11px; font-weight: bold; color: #E65100;
+    margin-top: -2px; margin-bottom: 4px;
+  }
+
+  .connector { display: flex; flex-direction: column; align-items: center; }
+
+  .norm-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; width: 100%; position: relative;
+  }
+  .norm-right {
+    display: flex; align-items: center; gap: 6px;
+    position: absolute; right: 16px;
+  }
+  .h-line-red { width: 50px; height: 2px; background: #B85450; position: relative; }
+  .h-line-red::after {
+    content: ''; position: absolute; right: -5px; top: -4px;
+    border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+    border-left: 6px solid #B85450;
+  }
+
+  .continue-line {
+    width: 2px; height: 18px; background: #B85450; border-style: dashed;
+    position: relative;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>资产字段语义歧义检测流程</h1>
+
+  <div class="flow">
+
+    <div class="node node-start">Excel 文件输入</div>
+    <div class="arrow"></div>
+
+    <div class="node node-process">Excel 解析 &amp; 列别名映射</div>
+    <div class="arrow"></div>
+
+    <div class="node node-process">数据分批 &amp; 多线程并行处理</div>
+    <div class="arrow"></div>
+
+    <!-- 规范性检查 -->
+    <div class="section section-norm">
+      <div class="section-title">规范性检查（Java 正则）</div>
+      <div class="flow">
+        <div class="node node-norm">规范性校验（字段非空 / 格式校验 / 命名规范 等）</div>
+        <div class="arrow arrow-short" style="background:#9673A6;"><span style="display:none">.</span></div>
+
+        <div class="norm-row">
+          <div class="connector">
+            <div class="norm-diamond-box">
+              <div class="norm-diamond-shape"></div>
+              <div class="diamond-text" style="font-weight:bold;">通过？</div>
+            </div>
+          </div>
+          <div class="norm-right">
+            <span class="branch-label label-no">否</span>
+            <div class="h-line-red"></div>
+            <div class="tag-mark">打标记录（不拦截）</div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+          <span class="branch-label label-yes" style="color:#333;">是 / 打标后继续 ↓</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <!-- 阶段一 -->
+    <div class="section section-phase1" style="padding-right:180px;">
+      <div class="section-title">阶段一：联合消歧（LLM）</div>
+
+      <div class="phase1-body">
+        <div class="phase1-steps">
+
+          <!-- D1 -->
+          <div class="d-row">
+            <div class="d-center">
+              <div class="diamond-box">
+                <div class="diamond-shape"></div>
+                <div class="diamond-text">D1: 字段中文名本身清晰？</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;width:100%;justify-content:center;gap:60px;align-items:flex-start;margin:2px 0;">
+            <span class="branch-label label-no">否 ↓</span>
+          </div>
+
+          <!-- D2 -->
+          <div class="d-row">
+            <div class="d-center">
+              <div class="diamond-box">
+                <div class="diamond-shape"></div>
+                <div class="diamond-text">D2: 中英文名互补消歧？</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;width:100%;justify-content:center;margin:2px 0;">
+            <span class="branch-label label-no">否 ↓</span>
+          </div>
+
+          <!-- D3 -->
+          <div class="d-row">
+            <div class="d-center">
+              <div class="diamond-box">
+                <div class="diamond-shape"></div>
+                <div class="diamond-text">D3: 表名/系统名 + 字段名推断？</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;width:100%;justify-content:center;margin:2px 0;">
+            <span class="branch-label label-no">否 ↓</span>
+          </div>
+
+          <!-- D4 -->
+          <div class="d-row">
+            <div class="d-center">
+              <div class="diamond-box">
+                <div class="diamond-shape"></div>
+                <div class="diamond-text">D4: 字段英文名清晰？</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;width:100%;justify-content:center;margin:2px 0;">
+            <span class="branch-label label-no">否 ↓</span>
+          </div>
+
+          <!-- D5 -->
+          <div class="d-row">
+            <div class="d-center">
+              <div class="diamond-box">
+                <div class="diamond-shape"></div>
+                <div class="diamond-text">D5: 系统名 + 字段名联合推断？</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 右侧消歧成功 -->
+        <div class="success-bar">
+          消歧成功<br><br>无歧义<br><br>跳过阶段二<br>直接输出 →
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:6px;">
+        <span class="branch-label" style="color:#2E7D32;">D1~D5 任一为"是" → 右侧消歧成功</span>
+      </div>
+
+    </div>
+
+    <div class="connector">
+      <div class="fork-label">否，D1~D5 全部失败 ↓</div>
+      <div class="arrow arrow-orange arrow-short"></div>
+    </div>
+
+    <!-- 阶段二 -->
+    <div class="section section-phase2">
+      <div class="section-title">阶段二：歧义分类（仅消歧失败的数据 / LLM）</div>
+
+      <div class="a-cards">
+        <div class="a-card a1">
+          <div class="a-title">A1</div>
+          中英文名不匹配
+        </div>
+        <div class="a-card a2">
+          <div class="a-title">A2</div>
+          缩写不明确
+        </div>
+        <div class="a-card a3">
+          <div class="a-title">A3</div>
+          字典歧义 / 不完整
+        </div>
+      </div>
+
+      <div class="arrow arrow-orange" style="margin:10px auto 0;"></div>
+
+      <div class="node node-summary" style="margin-top:4px;">
+        汇总歧义结果 &amp; 确定严重度（HIGH / MEDIUM / LOW）
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <div class="node node-process">生成结果 Excel（追加检测结果列）</div>
+    <div class="arrow"></div>
+
+    <div class="node node-end">输出检测报告 / API 响应</div>
+
+  </div>
+
+  <!-- 图例 -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#BBDEFB;"></div> 输入 / 输出</div>
+    <div class="legend-item"><div class="legend-color" style="background:#E1D5E7;"></div> 规范性检查</div>
+    <div class="legend-item"><div class="legend-color" style="background:#C8E6C9;"></div> 阶段一：联合消歧</div>
+    <div class="legend-item"><div class="legend-color" style="background:#FFF8E1;border-color:#FFD54F;"></div> 阶段二：歧义分类</div>
+    <div class="legend-item"><div class="legend-color" style="background:#FFCDD2;"></div> A1 中英文不匹配</div>
+    <div class="legend-item"><div class="legend-color" style="background:#FFE0B2;"></div> A2 缩写不明确</div>
+    <div class="legend-item"><div class="legend-color" style="background:#BBDEFB;border-color:#1E88E5;"></div> A3 字典歧义</div>
+    <div class="legend-item"><div class="legend-color" style="background:#F8CECC;"></div> 打标（不拦截）</div>
+  </div>
+
+</div>
+</body>
+</html>
