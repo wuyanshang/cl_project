@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>资产盘点流程</title>
+<style>body{margin:0;background:#f5f7fa;display:flex;justify-content:center;padding:30px 0;}</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="980" viewBox="0 0 1100 980" font-family="Microsoft YaHei, sans-serif">
+  <defs>
+    <filter id="bg"><feDropShadow dx="0" dy="3" stdDeviation="8" flood-opacity="0.08"/></filter>
+    <filter id="sh"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.08"/></filter>
+    <marker id="ab" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8Z" fill="#1565C0"/></marker>
+    <marker id="at" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8Z" fill="#00838F"/></marker>
+    <marker id="ak" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8Z" fill="#333"/></marker>
+  </defs>
+
+  <rect width="1100" height="980" rx="12" fill="#fff" filter="url(#bg)"/>
+
+  <!-- 标题 -->
+  <text x="550" y="42" text-anchor="middle" font-size="24" font-weight="bold" fill="#1A237E">资产盘点流程</text>
+
+  <!-- ======= 输入 ======= -->
+  <rect x="350" y="68" width="400" height="46" rx="23" fill="#BBDEFB" stroke="#1565C0" stroke-width="2" filter="url(#sh)"/>
+  <text x="550" y="96" text-anchor="middle" font-size="15" font-weight="bold" fill="#1565C0">读取字段元数据（系统 / 表 / 字段 中英文名）</text>
+  <line x1="550" y1="114" x2="550" y2="148" stroke="#1565C0" stroke-width="2" marker-end="url(#ab)"/>
+
+  <!-- ========== 五路并行检索 区域 ========== -->
+  <rect x="60" y="145" width="980" height="240" rx="12" fill="#E0F7FA" fill-opacity="0.35" stroke="#4DD0E1" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="75" y="170" font-size="14" font-weight="bold" fill="#00695C">五路并行检索</text>
+
+  <!-- 一路 -->
+  <rect x="96" y="190" width="172" height="140" rx="10" fill="#E0F7FA" stroke="#00838F" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="182" y="213" text-anchor="middle" font-size="13" font-weight="bold" fill="#00695C">一路</text>
+  <line x1="116" y1="223" x2="248" y2="223" stroke="#B2DFDB" stroke-width="1"/>
+  <text x="182" y="252" text-anchor="middle" font-size="11" fill="#555">搜索：字段名称</text>
+  <text x="182" y="280" text-anchor="middle" font-size="11" fill="#555">范围：资产名称</text>
+  <text x="182" y="312" text-anchor="middle" font-size="11" font-weight="bold" fill="#00695C">语义匹配</text>
+
+  <!-- 二路 -->
+  <rect x="280" y="190" width="172" height="140" rx="10" fill="#E0F7FA" stroke="#00838F" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="366" y="213" text-anchor="middle" font-size="13" font-weight="bold" fill="#00695C">二路</text>
+  <line x1="300" y1="223" x2="432" y2="223" stroke="#B2DFDB" stroke-width="1"/>
+  <text x="366" y="252" text-anchor="middle" font-size="11" fill="#555">搜索：字段名称</text>
+  <text x="366" y="280" text-anchor="middle" font-size="11" fill="#555">范围：资产名称</text>
+  <text x="366" y="312" text-anchor="middle" font-size="11" font-weight="bold" fill="#00695C">精确匹配</text>
+
+  <!-- 三路 -->
+  <rect x="464" y="190" width="172" height="140" rx="10" fill="#E0F7FA" stroke="#00838F" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="550" y="213" text-anchor="middle" font-size="13" font-weight="bold" fill="#00695C">三路</text>
+  <line x1="484" y1="223" x2="616" y2="223" stroke="#B2DFDB" stroke-width="1"/>
+  <text x="550" y="250" text-anchor="middle" font-size="11" fill="#555">搜索：字段名称</text>
+  <text x="550" y="266" text-anchor="middle" font-size="11" fill="#555">　　　+ 表名称</text>
+  <text x="550" y="292" text-anchor="middle" font-size="11" fill="#555">范围：资产目录项</text>
+  <text x="550" y="320" text-anchor="middle" font-size="11" font-weight="bold" fill="#00695C">语义匹配</text>
+
+  <!-- 四路 -->
+  <rect x="648" y="190" width="172" height="140" rx="10" fill="#E0F7FA" stroke="#00838F" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="734" y="213" text-anchor="middle" font-size="13" font-weight="bold" fill="#00695C">四路</text>
+  <line x1="668" y1="223" x2="800" y2="223" stroke="#B2DFDB" stroke-width="1"/>
+  <text x="734" y="250" text-anchor="middle" font-size="11" fill="#555">搜索：字段名称</text>
+  <text x="734" y="266" text-anchor="middle" font-size="11" fill="#555">　　　+ 表名称</text>
+  <text x="734" y="292" text-anchor="middle" font-size="11" fill="#555">范围：资产名称</text>
+  <text x="734" y="320" text-anchor="middle" font-size="11" font-weight="bold" fill="#00695C">语义匹配</text>
+
+  <!-- 五路 -->
+  <rect x="832" y="190" width="172" height="140" rx="10" fill="#E0F7FA" stroke="#00838F" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="918" y="213" text-anchor="middle" font-size="13" font-weight="bold" fill="#00695C">五路</text>
+  <line x1="852" y1="223" x2="984" y2="223" stroke="#B2DFDB" stroke-width="1"/>
+  <text x="918" y="252" text-anchor="middle" font-size="11" fill="#555">搜索：字段名称</text>
+  <text x="918" y="280" text-anchor="middle" font-size="11" fill="#555">范围：资产目录项</text>
+  <text x="918" y="312" text-anchor="middle" font-size="11" font-weight="bold" fill="#00695C">关键词匹配</text>
+
+  <!-- 五路汇聚线 -->
+  <line x1="182" y1="330" x2="182" y2="358" stroke="#00838F" stroke-width="1.5"/>
+  <line x1="366" y1="330" x2="366" y2="358" stroke="#00838F" stroke-width="1.5"/>
+  <line x1="550" y1="330" x2="550" y2="358" stroke="#00838F" stroke-width="1.5"/>
+  <line x1="734" y1="330" x2="734" y2="358" stroke="#00838F" stroke-width="1.5"/>
+  <line x1="918" y1="330" x2="918" y2="358" stroke="#00838F" stroke-width="1.5"/>
+  <line x1="182" y1="358" x2="918" y2="358" stroke="#00838F" stroke-width="1.5"/>
+  <line x1="550" y1="358" x2="550" y2="385" stroke="#00838F" stroke-width="1.5"/>
+
+  <!-- ======= 合并去重 ======= -->
+  <line x1="550" y1="385" x2="550" y2="408" stroke="#00838F" stroke-width="2" marker-end="url(#at)"/>
+  <rect x="340" y="410" width="420" height="44" rx="10" fill="#FFF2CC" stroke="#D6B656" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="550" y="437" text-anchor="middle" font-size="14" fill="#333">候选资产列表合并 &amp; 去重</text>
+  <line x1="550" y1="454" x2="550" y2="484" stroke="#333" stroke-width="2" marker-end="url(#ak)"/>
+
+  <!-- ======= 领域知识库检索 ======= -->
+  <rect x="290" y="486" width="520" height="56" rx="10" fill="#F3E5F5" stroke="#9673A6" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="550" y="511" text-anchor="middle" font-size="14" fill="#6A1B9A">领域知识库检索</text>
+  <text x="550" y="531" text-anchor="middle" font-size="11" fill="#9E9E9E">检索条件：字段名称 + 表名称</text>
+  <line x1="550" y1="542" x2="550" y2="572" stroke="#333" stroke-width="2" marker-end="url(#ak)"/>
+
+  <!-- ========== AI 推理 区域 ========== -->
+  <rect x="60" y="570" width="980" height="185" rx="12" fill="#E8F5E9" fill-opacity="0.4" stroke="#81C784" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="75" y="593" font-size="14" font-weight="bold" fill="#2E7D32">AI 推理</text>
+
+  <rect x="160" y="603" width="780" height="130" rx="10" fill="#C8E6C9" stroke="#43A047" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="550" y="632" text-anchor="middle" font-size="16" font-weight="bold" fill="#1B5E20">AI 推理 — 从候选列表中选择最佳匹配</text>
+  <line x1="200" y1="645" x2="900" y2="645" stroke="#A5D6A7" stroke-width="1"/>
+  <text x="550" y="668" text-anchor="middle" font-size="12" fill="#333">输入：候选资产列表 + 领域知识 + 字段元数据（系统/表/字段中英文名）</text>
+  <text x="550" y="693" text-anchor="middle" font-size="12" fill="#333">规则优先级：数据资产 → 主题 → 二级分类 / 三级分类</text>
+  <text x="550" y="718" text-anchor="middle" font-size="12" fill="#555">侧重字段中文名匹配，综合参考上下文信息</text>
+
+  <!-- ======= 输出 TOP1 ======= -->
+  <line x1="550" y1="755" x2="550" y2="786" stroke="#333" stroke-width="2" marker-end="url(#ak)"/>
+  <rect x="365" y="788" width="370" height="44" rx="10" fill="#FFE0B2" stroke="#FB8C00" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="550" y="815" text-anchor="middle" font-size="14" font-weight="bold" fill="#E65100">输出 TOP1 资产目录</text>
+  <line x1="550" y1="832" x2="550" y2="860" stroke="#333" stroke-width="2" marker-end="url(#ak)"/>
+
+  <!-- ======= 写入数据库（圆柱形） ======= -->
+  <ellipse cx="550" cy="872" rx="140" ry="12" fill="#BBDEFB" stroke="#1565C0" stroke-width="1.5"/>
+  <rect x="410" y="872" width="280" height="32" fill="#BBDEFB"/>
+  <line x1="410" y1="872" x2="410" y2="904" stroke="#1565C0" stroke-width="1.5"/>
+  <line x1="690" y1="872" x2="690" y2="904" stroke="#1565C0" stroke-width="1.5"/>
+  <ellipse cx="550" cy="904" rx="140" ry="12" fill="#BBDEFB" stroke="#1565C0" stroke-width="1.5"/>
+  <text x="550" y="895" text-anchor="middle" font-size="14" font-weight="bold" fill="#1565C0">写入数据库</text>
+
+  <!-- ======= 图例 ======= -->
+  <g transform="translate(100,940)" font-size="11" fill="#666">
+    <rect width="14" height="14" rx="3" fill="#BBDEFB" stroke="#1565C0"/>       <text x="20" y="12">输入/输出</text>
+    <rect x="105" width="14" height="14" rx="3" fill="#E0F7FA" stroke="#00838F"/><text x="125" y="12">多路检索</text>
+    <rect x="210" width="14" height="14" rx="3" fill="#FFF2CC" stroke="#D6B656"/><text x="230" y="12">合并去重</text>
+    <rect x="320" width="14" height="14" rx="3" fill="#F3E5F5" stroke="#9673A6"/><text x="340" y="12">知识库</text>
+    <rect x="410" width="14" height="14" rx="3" fill="#C8E6C9" stroke="#43A047"/><text x="430" y="12">AI 推理</text>
+    <rect x="510" width="14" height="14" rx="3" fill="#FFE0B2" stroke="#FB8C00"/><text x="530" y="12">输出结果</text>
+    <rect x="620" width="14" height="14" rx="3" fill="#BBDEFB" stroke="#1565C0"/><text x="640" y="12">数据库</text>
+  </g>
+
+</svg>
+</body>
+</html>
